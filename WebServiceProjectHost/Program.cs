@@ -14,8 +14,6 @@ namespace WebServiceProjectHost
     class Program
     {
         private static bool running = true;
-        static Parser ParserInstance = new Parser();
-        //string filePath = @"C:\Desktop"; //here put filepath
         static void Main(string[] args)
         { 
             ServiceHost webServiceProjectHost = null;
@@ -41,9 +39,6 @@ namespace WebServiceProjectHost
                 webServiceProjectHost.Open();
                 Console.WriteLine("Service is live now at: {0}", httpBaseAddress);
 
-                //Parse Thread
-                //Thread parsingThread = new Thread(new ThreadStart(ParserInstance.RunParser(filePath));
-                //parsingThread.Start();
 
                 Console.ReadKey();
             }

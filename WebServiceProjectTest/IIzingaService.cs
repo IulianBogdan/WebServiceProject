@@ -16,7 +16,7 @@ namespace WebServiceProjectTest
         [OperationContract(IsOneWay = false)]
         void Unsubscribe();
         [OperationContract(IsOneWay = false)]
-        void PublishResult(List<Log> result);
+        void PublishResult();
     }
 
     // Use a data contract as illustrated in the sample below to add composite types to service operations.

@@ -6,37 +6,51 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Configuration;
 
 namespace WebServiceProjectTest
 {
     // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "Service1" in both code and config file together.
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession, ConcurrencyMode =ConcurrencyMode.Reentrant)]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession, ConcurrencyMode = ConcurrencyMode.Reentrant)]
     public class IzingaService : IIzingaService
     {
-
+        Parser Parser = new Parser();
+        string filePath = @"C:\Users\Admin\Desktop\logs.txt";
         ICallbackService ServiceCallBack = null;
-        private static List<ICallbackService> Subscribers = new List<ICallbackService>(); // list of subscribers
-        public void PublishResult(List<Log> result) // list passed as parameter is the list returned by the parsing method
+        private static List<ICallbackService> Subscribers = null; // list of subscribers
+        public IzingaService()
         {
-            foreach (ICallbackService ICS in Subscribers)//foreach connection
+            Subscribers = new List<ICallbackService>();
+            Thread Publisher = new Thread(PublishResult);
+            Publisher.Start();
+        }
+        public void PublishResult() // list passed as parameter is the list returned by the parsing method
+        {
+            while (true)
             {
-                try
+                List<Log> result = new List<Log>(Parser.RunParser(filePath));
+                foreach (ICallbackService ICS in Subscribers)//foreach connection
                 {
-                    lock (result)//lock the list in case of new one arrives
+                    try
                     {
-                        if ((((IChannel)ICS).State == CommunicationState.Opened))
+                        lock (result)//lock the list in case of new one arrives
+                        {
+                            if ((((IChannel)ICS).State == CommunicationState.Opened))
 
-                            ICS.CallbackPublishResult(result);// pass the list to the callback contract
-                        else
-                            Subscribers.Remove(ICS);//remove the instance in case of losing connection
+                                ICS.CallbackPublishResult(result);// pass the list to the callback contract
+                            else
+                                Subscribers.Remove(ICS);//remove the instance in case of losing connection
+                        }
+                    }
+
+                    catch (Exception)
+                    {
                     }
                 }
-
-                catch (Exception)
-                {
-                }
+                Thread.Sleep(5000);
             }
+
         }
 
         public void Subscribe()
